@@ -2,50 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SelectScreen extends StatefulWidget {
-  SelectScreen({super.key, this.selectedTopics});
+  SelectScreen({super.key, this.selectedTopics, required this.alltopics});
   List<String>? selectedTopics;
-
+  final List alltopics;
   @override
   State<SelectScreen> createState() => _SelectScreenState();
 }
 
 class _SelectScreenState extends State<SelectScreen> {
-  List<String> topics = ["oops", "dsa", "cn", "dbms"];
-  List<dynamic> dummydata = [
-    {
-      "common_id": "654289191876",
-      "credits": 5,
-      "title": "Object Oriented Porgramming",
-      "modules": [
-        {
-          "title": "chapter_1",
-          "topics": [
-            "topic1ch1",
-            "topic2ch1",
-            "topic3ch1",
-            "topic4ch1",
-          ],
-        },
-        {
-          "title": "chapter3",
-          "topics": ["topic1ch2", "topic2ch2", "topic3ch2", "topic4ch2"],
-        },
-        {
-          "title": "Chapter4",
-          "topics": ["topic1ch4", "topic2ch4", "topic3ch4", "topic4ch4"]
-        }
-      ]
-    }
-  ];
-  List<dynamic> module = [];
   int? selectedIndex;
   int oth = 0;
   int? colindex;
   @override
   Widget build(BuildContext context) {
-    module = dummydata[0]["modules"];
-    print(module[0]["topics"].length);
-    print(module);
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
@@ -55,31 +24,32 @@ class _SelectScreenState extends State<SelectScreen> {
           Text("Select topics",
               style: GoogleFonts.oswald(
                   fontSize: 25, color: const Color.fromARGB(255, 0, 0, 0))),
-          Text(dummydata[0]["title"])
         ]),
       ),
       body: Padding(
         padding: EdgeInsets.only(left: 10, right: 10, top: 5),
         child: Column(children: [
-          Text(
-            "Topics Selected:   " +
-                widget.selectedTopics.toString().toUpperCase(),
-            style: GoogleFonts.lato(fontSize: 17, color: Colors.red),
-          ),
+          // Text(
+          //   "Topics Selected:   " + widget.selectedTopics.toString(),
+          //   style: GoogleFonts.lato(fontSize: 17, color: Colors.red),
+          // ),
           const SizedBox(
             height: 5,
           ),
           Expanded(
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: module.length,
+              itemCount: widget.alltopics.length,
               itemBuilder: (context, index) => Column(
                 children: [
                   Card(
                     elevation: 20,
                     child: Column(
                       children: [
-                        Text(module[index]["title"].toString().toUpperCase(),
+                        Text(
+                            widget.alltopics[index]["title"]
+                                .toString()
+                                .toUpperCase(),
                             style: GoogleFonts.roboto(
                                 fontSize: 20,
                                 color: const Color.fromARGB(255, 0, 0, 0))),
@@ -88,22 +58,39 @@ class _SelectScreenState extends State<SelectScreen> {
                         ),
                         ListView.builder(
                             shrinkWrap: true,
-                            itemCount: module[index]["topics"].length,
+                            itemCount: widget.alltopics[index]["topics"].length,
                             itemBuilder: (context, i) {
                               return ListTile(
                                 onTap: () {
                                   setState(() {
                                     selectedIndex = index;
 
+                                    if (widget.selectedTopics!.contains(
+                                        widget.alltopics[selectedIndex!]
+                                            ["topics"][i])) {
+                                      widget.alltopics.add(
+                                          widget.alltopics[selectedIndex!]
+                                              ["topics"][i]);
+                                      widget.alltopics.add("  ||  ");
+                                    }
+
                                     if (!widget.selectedTopics!.contains(
-                                        module[selectedIndex!]["topics"][i])) {
+                                        widget.alltopics[index]["topics"][i])) {
                                       widget.selectedTopics!.add(
-                                          module[selectedIndex!]["topics"][i]);
+                                          widget.alltopics[index]["topics"][i]);
                                     }
                                   });
                                 },
+                                tileColor: widget.selectedTopics == null
+                                    ? Colors.amber
+                                    : widget.selectedTopics!.contains(widget
+                                            .alltopics[index]["topics"][i])
+                                        ? Colors.red
+                                        : Colors.amberAccent,
                                 splashColor: Colors.black,
-                                title: Text(module[index]["topics"][i],
+                                title: Text(
+                                    " # " +
+                                        widget.alltopics[index]["topics"][i],
                                     style: GoogleFonts.lato(
                                         fontSize: 15,
                                         color:
@@ -123,6 +110,7 @@ class _SelectScreenState extends State<SelectScreen> {
           ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
+                print(widget.selectedTopics);
               },
               style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.black, backgroundColor: Colors.grey),

@@ -39,6 +39,7 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Color.fromARGB(255, 9, 130, 230),
         toolbarHeight: 80,
         title: const Text(

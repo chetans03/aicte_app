@@ -7,10 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FeedbackForm extends StatefulWidget {
-  const FeedbackForm({super.key});
+  const FeedbackForm(
+      {super.key, required this.subjectid, required this.selecttopics});
 
+  final subjectid;
+  final List selecttopics;
   @override
   State<FeedbackForm> createState() => _FeedbackFormState();
 }
@@ -19,6 +23,8 @@ class _FeedbackFormState extends State<FeedbackForm> {
   double currentvalue1 = 0;
   double currentvalue2 = 0;
   double currentvalue3 = 0;
+  double currentvalue4 = 0;
+  double currentvalue5 = 0;
   Color buttoncolor = Colors.white;
   var colorcode = 0;
   TextEditingController controllerQ4 = TextEditingController();
@@ -27,8 +33,18 @@ class _FeedbackFormState extends State<FeedbackForm> {
   var YN = 0;
   bool isloading = false;
   TextEditingController controllerQ6 = TextEditingController();
-  var Url = "https://aicte-curriculum-portal.onrender.com/api/v1/feedback/form";
+
   List<String> selectedTopics = [];
+  var name = "";
+  var id = "";
+
+  intitalize() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      prefs.getString('name');
+      prefs.getString('id');
+    });
+  }
 
   void onSubmit() async {
     var res;
@@ -44,25 +60,34 @@ class _FeedbackFormState extends State<FeedbackForm> {
             "https://aicte-curriculum-portal.onrender.com/api/v1/feedback/form"),
         headers: {"Content-Type": "application/json"},
         body: json.encode({
-          "subjectId": "6571569328735d1182d280dd",
+          "subjectId": widget.subjectid,
           "by": "6571569328735d1182d280dd",
-          "isStudent": true.toString(),
+          "isStudent": "true",
           "answers": [
             {"questionNo": 1, "questionType": "rate", "value": currentvalue1},
             {"questionNo": 2, "questionType": "rate", "value": currentvalue2},
-            {"questionNo": 3, "questionType": "true/false", "value": YN},
+            {
+              "questionNo": 3,
+              "questionType": "true/false",
+              "value": currentvalue3
+            },
             {"questionNo": 4, "questionType": "descriptive", "value": q4},
-            {"questionNo": 5, "questionType": "rate", "value": currentvalue3},
+            {"questionNo": 5, "questionType": "rate", "value": currentvalue5},
             {"questionNo": 6, "questionType": "descriptive", "value": q6},
             {"questionNo": 7, "questionType": "select", "value": selectedTopics}
           ]
         }),
       );
     } catch (e) {
+      setState(() {
+        isloading = false;
+      });
       print("Exception occurred: " + e.toString());
     }
 
     var data = jsonDecode(res.body);
+    print(res.statusCode);
+    print(data["message"]);
 
     if (res.statusCode == 201) {
       print("Sent successfully and statuscode is " + res.statusCode.toString());
@@ -73,6 +98,8 @@ class _FeedbackFormState extends State<FeedbackForm> {
       // selectedTopics = [];
       // Handle the response data here
     } else {
+      ScaffoldMessenger.maybeOf(context)!
+          .showSnackBar(SnackBar(content: Text(data["message"].toString())));
       print("Failed");
     }
     setState(() {
@@ -128,6 +155,13 @@ class _FeedbackFormState extends State<FeedbackForm> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    intitalize();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -138,57 +172,6 @@ class _FeedbackFormState extends State<FeedbackForm> {
         padding: const EdgeInsets.only(left: 20, right: 20, top: 15),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Name",
-                      style: GoogleFonts.oswald(
-                          fontSize: 20, color: Color.fromARGB(255, 0, 0, 0)),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      "Faculty Id",
-                      style: GoogleFonts.oswald(
-                          fontSize: 20, color: Color.fromARGB(255, 0, 0, 0)),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Professor",
-                      style: GoogleFonts.oswald(
-                          fontSize: 20,
-                          color: const Color.fromARGB(255, 5, 50, 87)),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text(
-                      "IIT-Delhi",
-                      style: GoogleFonts.oswald(
-                          fontSize: 20,
-                          color: const Color.fromARGB(255, 5, 50, 87)),
-                    ),
-                  ],
-                )
-              ],
-            ),
-            Container(
-              height: 3,
-              width: MediaQuery.of(context).size.width,
-              color: Colors.black,
-            ),
-            const SizedBox(
-              height: 40,
-            ),
             Expanded(
               child: ListView(
                 children: [
@@ -219,7 +202,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
                   ),
                   Text(
                       style: GoogleFonts.rubik(fontSize: 15),
-                      "Q2. How would you rate the difficulty level of the curriculum on a scale of 1-5 ?"),
+                      "Q2. How would you rate the interest level of the curriculum on a scale of 1-5 ?"),
                   Center(
                     child: Text(currentvalue2.toString()),
                   ),
@@ -243,10 +226,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
                   ),
                   Text(
                       style: GoogleFonts.rubik(fontSize: 15),
-                      "Q3. Do you think that the course work equips you with industry relevant skills?"),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                      "Q3. Do you think that the course work equips you with industry relevance?"),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -257,7 +237,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
                             colorcode = 1;
                           });
                         },
-                        child: const Text("Yes"),
+                        child: Text("Yes"),
                         style: OutlinedButton.styleFrom(
                             backgroundColor:
                                 colorcode == 1 ? Colors.blue : Colors.white,
@@ -270,7 +250,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
                             colorcode = 2;
                           });
                         },
-                        child: const Text("No"),
+                        child: Text("NO"),
                         style: OutlinedButton.styleFrom(
                             backgroundColor:
                                 colorcode == 2 ? Colors.blue : Colors.white,
@@ -283,7 +263,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
                   ),
                   Text(
                       style: GoogleFonts.rubik(fontSize: 15),
-                      "Q4. What are your thoughts about the time duration allocated for the completion of syllabus?"),
+                      "Q4. What are your thoughts on about the time duration allocated for the completion of the syllabus"),
                   TextField(
                     controller: controllerQ4,
                     textCapitalization: TextCapitalization.sentences,
@@ -293,32 +273,38 @@ class _FeedbackFormState extends State<FeedbackForm> {
                       border: OutlineInputBorder(),
                     ),
                   ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                      style: GoogleFonts.rubik(fontSize: 15),
+                      "Q5. How was the sutdent performance this year "),
+                  Center(
+                    child: Text(currentvalue5.toString()),
+                  ),
+                  Slider(
+                    min: 0.00,
+                    max: 100.00,
+                    divisions: 100,
+                    label: currentvalue5.toString(),
+                    value: currentvalue5,
+                    onChanged: (val) {
+                      setState(
+                        () {
+                          currentvalue5 = val;
+                        },
+                      );
+                    },
+                  ),
                   const SizedBox(
                     height: 10,
                   ),
                   Text(
                       style: GoogleFonts.rubik(fontSize: 15),
-                      "Q5. How would you rate the difficulty level of the curriculum on a scale of 1-5 ?"),
-                  Center(
-                    child: Text(currentvalue3.toString()),
+                      "Q6. Is there any topic you want to include from the subject?"),
+                  const SizedBox(
+                    height: 10,
                   ),
-                  Slider(
-                    min: 0,
-                    max: 5,
-                    divisions: 5,
-                    label: currentvalue3.toString(),
-                    value: currentvalue3,
-                    onChanged: (val) {
-                      setState(
-                        () {
-                          currentvalue3 = val;
-                        },
-                      );
-                    },
-                  ),
-                  Text(
-                      style: GoogleFonts.rubik(fontSize: 15),
-                      "Q6. Is there any topic you want to include in the subject?"),
                   TextField(
                     controller: controllerQ6,
                     textCapitalization: TextCapitalization.sentences,
@@ -342,8 +328,9 @@ class _FeedbackFormState extends State<FeedbackForm> {
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) =>
-                                SelectScreen(selectedTopics: selectedTopics),
+                            builder: (context) => SelectScreen(
+                                selectedTopics: selectedTopics,
+                                alltopics: widget.selecttopics),
                           ),
                         );
                         print(selectedTopics);
@@ -354,6 +341,9 @@ class _FeedbackFormState extends State<FeedbackForm> {
                           foregroundColor: Color.fromARGB(255, 255, 255, 255),
                           backgroundColor: Colors.blue),
                     ),
+                  ),
+                  const SizedBox(
+                    height: 20,
                   ),
                   const SizedBox(
                     height: 20,

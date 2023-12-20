@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:aicte/home.dart';
+import 'package:aicte/screens/veficationscreen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -49,7 +50,7 @@ class _LoginState extends State<Login> {
     //   return;
     // }
 
-    var body = {"userId": "6581d44a0c03ea66ae835465", "password": "p2vsr17x"};
+    var body = {"userId": id, "password": password};
     var databody = json.encode(body);
     var res;
     try {
@@ -107,6 +108,8 @@ class _LoginState extends State<Login> {
       prefs.setString('role', role);
       prefs.setString('id', data["user"]["_id"]);
     } else {
+      ScaffoldMessenger.maybeOf(context)!.showSnackBar(SnackBar(
+          content: Text("Something went wrong or the user may not exist")));
       setState(() {
         isloading = false;
       });
@@ -114,10 +117,8 @@ class _LoginState extends State<Login> {
 
       print(data["message"]);
     }
-    ScaffoldMessenger.maybeOf(context)!.showSnackBar(SnackBar(
-        content: Text(res.statusCode == 200
-            ? "Logged in successfully"
-            : message.toString())));
+    ScaffoldMessenger.maybeOf(context)!
+        .showSnackBar(SnackBar(content: Text("Logged in successfully")));
     setState(() {
       isloading = false;
     });
@@ -141,7 +142,7 @@ class _LoginState extends State<Login> {
                 ),
               ),
               const Text(
-                "AICTE Mobile App",
+                "AICTE Feedback App",
                 style: TextStyle(
                     fontSize: 25,
                     color: Colors.white,
@@ -149,6 +150,16 @@ class _LoginState extends State<Login> {
               ),
               const SizedBox(
                 height: 30,
+              ),
+              Text(
+                "Login",
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20,
+                    color: const Color.fromARGB(255, 0, 0, 0)),
+              ),
+              SizedBox(
+                height: 20,
               ),
               Text(
                 "Faculty ID",
@@ -215,19 +226,34 @@ class _LoginState extends State<Login> {
               const SizedBox(
                 height: 20,
               ),
-              isloading
-                  ? const SpinKitCircle(
-                      color: const Color.fromARGB(255, 0, 0, 0),
-                      size: 50,
-                    )
-                  : ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          fixedSize: const Size(200, 40),
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white),
-                      onPressed: onLogin,
-                      child: const Text("Login"),
-                    ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  isloading
+                      ? const SpinKitCircle(
+                          color: const Color.fromARGB(255, 0, 0, 0),
+                          size: 50,
+                        )
+                      : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              fixedSize: const Size(200, 40),
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white),
+                          onPressed: onLogin,
+                          child: const Text("Login"),
+                        ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => VerificationScreen(),
+                        ),
+                      );
+                    },
+                    child: Text("Register"),
+                  ),
+                ],
+              )
             ],
           ),
         ),
