@@ -42,13 +42,13 @@ class _LoginState extends State<Login> {
   var password = "";
 
   void onLogin() async {
-    // var validated = _formkey.currentState!.validate();
+    var validated = _formkey.currentState!.validate();
 
-    // if (validated) {
-    //   _formkey.currentState!.save();
-    // } else {
-    //   return;
-    // }
+    if (validated) {
+      _formkey.currentState!.save();
+    } else {
+      return;
+    }
 
     var body = {"userId": id, "password": password};
     var databody = json.encode(body);
@@ -63,6 +63,7 @@ class _LoginState extends State<Login> {
         headers: {"Content-Type": "application/json"},
         body: databody,
       );
+      print("id is" + id + password);
     } catch (e) {
       setState(() {
         isloading = false;
