@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:aicte/screens/selectScreen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 
@@ -23,16 +25,23 @@ class _FeedbackFormState extends State<FeedbackForm> {
   var q4 = "";
   var q6 = "";
   var YN = 0;
+  bool isloading = false;
   TextEditingController controllerQ6 = TextEditingController();
   var Url = "https://aicte-curriculum-portal.onrender.com/api/v1/feedback/form";
+  List<String> selectedTopics = [];
 
   void onSubmit() async {
     var res;
 
     try {
+      print("inside tyr");
+      setState(() {
+        isloading = true;
+      });
       // print(answersJson);
       res = await http.post(
-        Uri.parse("http://10.0.2.2:8080/api/v1/feedback/form"),
+        Uri.parse(
+            "https://aicte-curriculum-portal.onrender.com/api/v1/feedback/form"),
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           "subjectId": "6571569328735d1182d280dd",
@@ -43,9 +52,9 @@ class _FeedbackFormState extends State<FeedbackForm> {
             {"questionNo": 2, "questionType": "rate", "value": currentvalue2},
             {"questionNo": 3, "questionType": "true/false", "value": YN},
             {"questionNo": 4, "questionType": "descriptive", "value": q4},
-            {"questionNo": 5, "questionType": "rate", "value": 5},
+            {"questionNo": 5, "questionType": "rate", "value": currentvalue3},
             {"questionNo": 6, "questionType": "descriptive", "value": q6},
-            {"questionNo": 7, "questionType": "select", "value": "Select"}
+            {"questionNo": 7, "questionType": "select", "value": selectedTopics}
           ]
         }),
       );
@@ -61,10 +70,21 @@ class _FeedbackFormState extends State<FeedbackForm> {
       Navigator.pop(context);
       ScaffoldMessenger.maybeOf(context)!.showSnackBar(
           const SnackBar(content: Text("Feedback submitted successfully")));
+      // selectedTopics = [];
       // Handle the response data here
     } else {
       print("Failed");
     }
+    setState(() {
+      isloading = false;
+    });
+    print(" q1" + currentvalue1.toString());
+    print("q2" + currentvalue2.toString());
+    print("tf" + YN.toString());
+    print("q5" + currentvalue3.toString());
+    print("q4" + q4);
+    print("q6" + q6);
+    print(selectedTopics);
 
     // try {
     //   print("inside tye");
@@ -319,7 +339,15 @@ class _FeedbackFormState extends State<FeedbackForm> {
                   ),
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                SelectScreen(selectedTopics: selectedTopics),
+                          ),
+                        );
+                        print(selectedTopics);
+                      },
                       child: Text("Select topic"),
                       style: TextButton.styleFrom(
                           fixedSize: const Size(150, 20),
@@ -330,31 +358,37 @@ class _FeedbackFormState extends State<FeedbackForm> {
                   const SizedBox(
                     height: 20,
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        setState(() {
-                          q4 = controllerQ4.text;
-                          q6 = controllerQ6.text;
-                        });
-                      });
-                      // print(currentvalue1);
-                      // print(currentvalue2);
-                      // print(YN);
-                      // print(q4);
-                      // print(currentvalue3);
-                      // print(q6);
-                      onSubmit();
-                    },
-                    child: Text(
-                      "Submit Feedback",
-                      style: GoogleFonts.lato(fontSize: 20),
-                    ),
-                    style: TextButton.styleFrom(
-                        fixedSize: const Size(20, 20),
-                        foregroundColor: Color.fromARGB(255, 255, 255, 255),
-                        backgroundColor: Color.fromARGB(255, 8, 155, 13)),
-                  ),
+                  isloading
+                      ? const SpinKitCircle(
+                          color: const Color.fromARGB(255, 0, 0, 0),
+                          size: 70,
+                        )
+                      : ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              setState(() {
+                                q4 = controllerQ4.text;
+                                q6 = controllerQ6.text;
+                              });
+                            });
+                            // print(currentvalue1);
+                            // print(currentvalue2);
+                            // print(YN);
+                            // print(q4);
+                            // print(currentvalue3);
+                            // print(q6);
+                            onSubmit();
+                          },
+                          child: Text(
+                            "Submit Feedback",
+                            style: GoogleFonts.lato(fontSize: 20),
+                          ),
+                          style: TextButton.styleFrom(
+                              fixedSize: const Size(20, 20),
+                              foregroundColor:
+                                  Color.fromARGB(255, 255, 255, 255),
+                              backgroundColor: Color.fromARGB(255, 8, 155, 13)),
+                        ),
                   const SizedBox(
                     height: 30,
                   )
